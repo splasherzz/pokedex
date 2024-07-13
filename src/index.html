@@ -10,11 +10,18 @@
         </div>
         <div id="main">
             <form id="filterform" class="p-5">
-                <label>ID Number</label>
+                <label for="id">ID Number</label>
                 <input type="text" name="id" id="id" />
-                <label>Name</label>
+                <label for="name">Name</label>
                 <input type="text" name="name" id="name" />
                 <input type="submit" value="Apply Filter">
+            </form>
+            <form id="sortform" class="p-5">
+                <label>Sort by</label>
+                <input type="radio" name="sort" value="id" id="id" checked />
+                <label for="id">ID</label>
+                <input type="radio" name="sort" value="name" id="name" />
+                <label for="name">Name</label>
             </form>
             <div id="cardlist" class="grid grid-cols-5 gap-6 mx-6">
             </div>

@@ -6,7 +6,8 @@ const pokemonDataList = [];
 
 const cardList = document.getElementById('cardlist');
 const loadMoreBtn = document.getElementById('loadmore');
-const filterForm = document.getElementById('filterform')
+const filterForm = document.getElementById('filterform');
+const sortForm = document.getElementById('sortform');
 
 async function getPokemonDetailsByURL(url) {
     try {
@@ -94,6 +95,37 @@ function applyFilter(id, name) {
     })
 }
 
+function applySort(sortType) {
+    const sortedPokemon = pokemonDataList.sort((pokeA, pokeB) => {
+        if (sortType === "id") {
+            return pokeA.id - pokeB.id;
+        } else {
+            if (pokeA.name < pokeB.name) {
+                return -1;
+            } else {
+                return 1;
+            }
+        }
+    })
+
+    cardList.innerHTML = '';
+    sortedPokemon.forEach(pokemonDetails => {
+        const id = pokemonDetails.id;
+        const name = pokemonDetails.name;
+        const types = pokemonDetails.types.map(type => type.type.name).join(', ');
+        const imgSrc = `https://assets.pokemon.com/assets/cms2/img/pokedex/full/${id.toString().padStart(3, '0')}.png`;
+
+        const newCard = document.createElement("div");
+        newCard.setAttribute("class", "card")
+        newCard.innerHTML = `<img src="${imgSrc}" alt="${name}">
+            <div>Id No. ${id.toString().padStart(3, '0')}</div>
+            <div>${name}</div>
+            <div>Type(s): ${types}</div>`
+
+        cardList.appendChild(newCard);
+    })
+}
+
 loadMoreBtn.addEventListener('click', loadMorePokemons);
 
 filterForm.addEventListener('submit', (e) => {
@@ -103,6 +135,11 @@ filterForm.addEventListener('submit', (e) => {
     applyFilter(id, name);
 });
 
+sortForm.addEventListener('change', (e) => {
+    const sortType = e.target.value;
+    applySort(sortType);
+});
+
 window.onload = () => {
     getPokemons(1_010, 0)
         .then(async (pokemons) => {
@@ -110,7 +147,6 @@ window.onload = () => {
             for(const pokemon of pokemons) {
                 const pokemonDetails = await getPokemonDetailsByURL(pokemon.url);
                 pokemonDataList.push(pokemonDetails);
-                console.log(pokemon);
                 
                 if (currentOffset < OFFSET_AMOUNT) {
                     const id = pokemonDetails.id;
