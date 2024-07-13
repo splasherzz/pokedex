@@ -1,0 +1,24 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="styles.css">
+        <script src="https://cdn.tailwindcss.com"></script>
+        <title>Pokedex</title>
+    </head>
+    <body>
+        <div id="title" class="p-5">
+            <h1>Welcome to the Pokedex!</h1>
+        </div>
+        <div id="main">
+            <form class="p-5">
+                <label>ID Number</label>
+                <input type="text" name="id" id="id" />
+                <label>Name</label>
+                <input type="text" name="name" id="name" />
+            </form>
+            <div id="cardlist" class="grid grid-cols-5 gap-6 mx-6">
+            </div>
+            <button id="loadmore">Load More</button>
+        </div>
+        <script type="module" src="index.js"></script>
+    </body>
+</html>
