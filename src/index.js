@@ -8,6 +8,13 @@ const cardList = document.getElementById('cardlist');
 const loadMoreBtn = document.getElementById('loadmore');
 const filterForm = document.getElementById('filterform');
 const sortForm = document.getElementById('sortform');
+const modal = document.getElementById('modal');
+
+const WEAKNESSES = {
+    "normal": ["rock", "ghost", "steel"],
+    "fighting": ["flying", "poison", "psychic", "bug", "ghost", "fairy"]
+    // Continue to add
+};
 
 async function getPokemonDetailsByURL(url) {
     try {
@@ -126,6 +133,56 @@ function applySort(sortType) {
     })
 }
 
+function showModal(details) {
+    modal.style.display = 'flex';
+    const modalbody = document.getElementById('modalbody');
+    const id = details.id.toString().padStart(3, '0');
+    const types = details.types.map(type => type.type.name).join(', ');
+    const weaknesses = "rock, ghost, steel"; 
+    
+    modalbody.innerHTML = `
+        <img src="https://assets.pokemon.com/assets/cms2/img/pokedex/full/${id}.png" alt="ditto">
+            <div id="info" class="flex flex-col">
+                <p>ID Num: ${id}</p>
+                <p>Name: ${details.name}</p>
+                <p>Height: ${details.height}</p>
+                <p>Weight: ${details.weight}</p>
+                <p>Type(s): ${types}</p>
+                <p>Weakness: Rock, Ghost, Steel</p>
+                <div>
+                    <p>Stats</p>
+                    <div>HP: ${details.stats[0].base_stat}</div>
+                    <div>Attack: ${details.stats[1].base_stat}</div>
+                    <div>Defense: ${details.stats[2].base_stat}</div>
+                    <div>Special Attack: ${details.stats[3].base_stat}</div>
+                    <div>Special Defense: ${details.stats[4].base_stat}</div>
+                    <div>Speed: ${details.stats[5].base_stat}</div>
+                </div>
+                <p>Abilities</p>
+                <div id="abilities" class="max-h-32 overflow-scroll">
+                </div>
+                <p>Moves</p>
+                <div id="moves" class="max-h-16 overflow-scroll">
+                </div>
+            </div>
+        </div>`;
+    
+    const abilities = document.getElementById("abilities");
+    details.abilities.forEach(ability => {
+        const newAbilityDiv = document.createElement("div");
+        newAbilityDiv.innerHTML = `${ability.ability.name}`;
+        abilities.appendChild(newAbilityDiv);
+    });
+
+    const moves = document.getElementById("moves");
+    details.moves.forEach(move => {
+        const newMoveDiv = document.createElement("div");
+        newMoveDiv.innerHTML = `${move.move.name}`;
+        moves.appendChild(newMoveDiv);
+    });
+
+}
+
 loadMoreBtn.addEventListener('click', loadMorePokemons);
 
 filterForm.addEventListener('submit', (e) => {
@@ -141,6 +198,7 @@ sortForm.addEventListener('change', (e) => {
 });
 
 window.onload = () => {
+    modal.style.display = 'flex';
     getPokemons(1_010, 0)
         .then(async (pokemons) => {
             let numProcessed = 0;
@@ -165,5 +223,7 @@ window.onload = () => {
                     currentOffset += 1;
                 }
             }
+            console.log(pokemonDataList[0]);
+            showModal(pokemonDataList[0]);
     });
 }
