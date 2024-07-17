@@ -5,6 +5,9 @@ let currentOffset = 0;
 const pokemonDataList = [];
 let currentModalPokemonIndex = 0;
 
+let filterFunction = (pokemon) => true;
+let sortFunction = (pokeA, pokeB) => pokeA.id - pokeB.id;
+
 const cardList = document.getElementById('cardlist');
 const loadMoreBtn = document.getElementById('loadmore');
 const filterForm = document.getElementById('filterform');
@@ -34,6 +37,27 @@ const WEAKNESSES = {
     "dark": ["Fighting", "Dark", "Fairy"],
     "fairy": ["Poison", "Steel", "Fire"]
 };
+
+const PILL_COLORS = {
+    "normal": "zinc-300",
+    "fighting": "red-800",
+    "flying": "sky-600",
+    "poison": "violet-700",
+    "ground": "yellow-700",
+    "rock": "yellow-950",
+    "bug": "lime-300",
+    "ghost": "purple-400",
+    "steel": "zinc-600",
+    "fire": "orange-600",
+    "water": "cyan-600",
+    "grass": "green-600",
+    "electric": "yellow-300",
+    "psychic": "pink-700",
+    "ice": "cyan-500",
+    "dragon": "violet-900",
+    "dark": "neutral-800",
+    "fairy": "fuchsia-500"
+}
 
 async function getPokemonDetailsByURL(url) {
     try {
@@ -72,26 +96,32 @@ function loadPokemons(amount, offset) {
     return pokemonDataList.slice(offset, offset+amount);
 }
 
+function createCard(pokemonDetails) {
+    const id = pokemonDetails.id;
+    const name = pokemonDetails.name;
+    const types = pokemonDetails.types.map(type => `<div class="bg-${PILL_COLORS[type.type.name]} text-xs text-white capitalize rounded-2xl px-3 py-1 m-1">${type.type.name}</div>`).join(' ');
+    const imgSrc = `https://assets.pokemon.com/assets/cms2/img/pokedex/full/${id.toString().padStart(3, '0')}.png`;
+
+    const newCard = document.createElement("div");
+    newCard.setAttribute("class", "card rounded-lg px-4 py-2 hover:bg-white hover:shadow-lg cursor-pointer group");
+    newCard.innerHTML = `
+        <div class="pokenum text-lg text-slate-500">${id.toString().padStart(3, '0')}</div>
+        <img src="${imgSrc}" alt="${name}" class="transition-transform duration-300 group-hover:scale-110">
+        <div class="pokename capitalize font-bold text-center text-3xl">${name}</div>
+        <div class="poketype flex justify-center mt-1">${types}</div>`
+    
+    newCard.addEventListener('click', (e) => {
+        currentModalPokemonIndex = id - 1;
+        showModal(pokemonDetails);
+    });
+    return newCard;
+}
+
 async function loadMorePokemons() {
     const pokemons = loadPokemons(OFFSET_AMOUNT, currentOffset);
     // loop over the results, for each result, perform fetch to get the details
     for(const pokemonDetails of pokemons) {
-        const id = pokemonDetails.id;
-        const name = pokemonDetails.name;
-        const types = pokemonDetails.types.map(type => type.type.name).join(', ');
-        const imgSrc = `https://assets.pokemon.com/assets/cms2/img/pokedex/full/${id.toString().padStart(3, '0')}.png`;
-
-        const newCard = document.createElement("div");
-        newCard.setAttribute("class", "card")
-        newCard.innerHTML = `<img src="${imgSrc}" alt="${name}">
-            <div>Id No. ${id.toString().padStart(3, '0')}</div>
-            <div>${name}</div>
-            <div>Type(s): ${types}</div>`
-        
-        newCard.addEventListener('click', (e) => {
-            currentModalPokemonIndex = id - 1;
-            showModal(pokemonDetails);
-        })
+        const newCard = createCard(pokemonDetails);
         cardList.appendChild(newCard);
     }
 
@@ -99,38 +129,27 @@ async function loadMorePokemons() {
     currentOffset = currentOffset + OFFSET_AMOUNT;
 }
 
-function applyFilter(id, name) {
-    const filteredPokemon = pokemonDataList.filter(pokemon => {
-        return pokemon.id == id || pokemon.name === name || id === '' && name === '';
-    });
-
-    console.log(id, name)
-    console.log(filteredPokemon)
+function refreshCardList() {
+    const filteredPokemon = pokemonDataList.filter(filterFunction);
+    const sortedPokemon = filteredPokemon.sort(sortFunction);
 
     cardList.innerHTML = '';
-    filteredPokemon.forEach(pokemonDetails => {
-        const id = pokemonDetails.id;
-        const name = pokemonDetails.name;
-        const types = pokemonDetails.types.map(type => type.type.name).join(', ');
-        const imgSrc = `https://assets.pokemon.com/assets/cms2/img/pokedex/full/${id.toString().padStart(3, '0')}.png`;
-
-        const newCard = document.createElement("div");
-        newCard.setAttribute("class", "card")
-        newCard.innerHTML = `<img src="${imgSrc}" alt="${name}">
-            <div>Id No. ${id.toString().padStart(3, '0')}</div>
-            <div>${name}</div>
-            <div>Type(s): ${types}</div>`
-
-        newCard.addEventListener('click', (e) => {
-            currentModalPokemonIndex = id - 1;
-            showModal(pokemonDetails);
-        })
+    sortedPokemon.forEach(pokemonDetails => {
+        const newCard = createCard(pokemonDetails);
         cardList.appendChild(newCard);
-    })
+    });
+}
+
+function applyFilter(id, name) {
+    filterFunction = (pokemon) => {
+        return pokemon.id == id || (name !== '' && pokemon.name.includes(name)) || id === '' && name === '';
+    }
+
+    refreshCardList();
 }
 
 function applySort(sortType) {
-    const sortedPokemon = pokemonDataList.sort((pokeA, pokeB) => {
+    sortFunction = (pokeA, pokeB) => {
         if (sortType === "id") {
             return pokeA.id - pokeB.id;
         } else {
@@ -140,28 +159,8 @@ function applySort(sortType) {
                 return 1;
             }
         }
-    })
-
-    cardList.innerHTML = '';
-    sortedPokemon.forEach(pokemonDetails => {
-        const id = pokemonDetails.id;
-        const name = pokemonDetails.name;
-        const types = pokemonDetails.types.map(type => type.type.name).join(', ');
-        const imgSrc = `https://assets.pokemon.com/assets/cms2/img/pokedex/full/${id.toString().padStart(3, '0')}.png`;
-
-        const newCard = document.createElement("div");
-        newCard.setAttribute("class", "card")
-        newCard.innerHTML = `<img src="${imgSrc}" alt="${name}">
-            <div>Id No. ${id.toString().padStart(3, '0')}</div>
-            <div>${name}</div>
-            <div>Type(s): ${types}</div>`
-            
-        newCard.addEventListener('click', (e) => {
-            currentModalPokemonIndex = id - 1;
-            showModal(pokemonDetails);
-        })
-        cardList.appendChild(newCard);
-    })
+    };
+    refreshCardList();
 }
 
 function showModal(details) {
@@ -179,29 +178,38 @@ function showModal(details) {
     
     
     modalbody.innerHTML = `
-        <img src="https://assets.pokemon.com/assets/cms2/img/pokedex/full/${id}.png" alt="ditto">
-            <div id="info" class="flex flex-col">
-                <p>ID Num: ${id}</p>
-                <p>Name: ${details.name}</p>
-                <p>Height: ${details.height}</p>
-                <p>Weight: ${details.weight}</p>
-                <p>Type(s): ${types}</p>
-                <p>Weakness: ${[...weaknesses].join(', ')}</p>
-                <div>
-                    <p>Stats</p>
-                    <div>HP: ${details.stats[0].base_stat}</div>
-                    <div>Attack: ${details.stats[1].base_stat}</div>
-                    <div>Defense: ${details.stats[2].base_stat}</div>
-                    <div>Special Attack: ${details.stats[3].base_stat}</div>
-                    <div>Special Defense: ${details.stats[4].base_stat}</div>
-                    <div>Speed: ${details.stats[5].base_stat}</div>
+        <div class="flex flex-col items-center bg-white rounded-full mx-5">
+            <img src="https://assets.pokemon.com/assets/cms2/img/pokedex/full/${id}.png" alt="${details.name}">
+            <p class="text-sm">${id}</p>
+            <p class="uppercase font-bold text-3xl">${details.name}</p>
+        </div>
+        <div id="info" class="flex flex-col">
+            <div class="flex">
+                <div class="flex flex-col items-center text-xl">
+                    <p>${details.height}</p>
+                    <p>Height</p>
                 </div>
-                <p>Abilities</p>
-                <div id="abilities" class="max-h-32 overflow-y-scroll">
+                <div class="flex flex-col items-center text-xl">
+                    <p>${details.weight}</p>
+                    <p>Weight</p>
                 </div>
-                <p>Moves</p>
-                <div id="moves" class="max-h-16 overflow-y-scroll">
-                </div>
+            </div>
+            <p>Type(s): ${types}</p>
+            <p>Weakness: ${[...weaknesses].join(', ')}</p>
+            <div>
+                <p>Stats</p>
+                <div>HP: ${details.stats[0].base_stat}</div>
+                <div>Attack: ${details.stats[1].base_stat}</div>
+                <div>Defense: ${details.stats[2].base_stat}</div>
+                <div>Special Attack: ${details.stats[3].base_stat}</div>
+                <div>Special Defense: ${details.stats[4].base_stat}</div>
+                <div>Speed: ${details.stats[5].base_stat}</div>
+            </div>
+            <p>Abilities</p>
+            <div id="abilities" class="max-h-32 overflow-y-scroll">
+            </div>
+            <p>Moves</p>
+            <div id="moves" class="max-h-16 overflow-y-scroll">
             </div>
         </div>`;
     
@@ -263,22 +271,7 @@ window.onload = () => {
                 pokemonDataList.push(pokemonDetails);
                 
                 if (currentOffset < OFFSET_AMOUNT) {
-                    const id = pokemonDetails.id;
-                    const name = pokemonDetails.name;
-                    const types = pokemonDetails.types.map(type => type.type.name).join(', ');
-                    const imgSrc = `https://assets.pokemon.com/assets/cms2/img/pokedex/full/${id.toString().padStart(3, '0')}.png`;
-    
-                    const newCard = document.createElement("div");
-                    newCard.setAttribute("class", "card")
-                    newCard.innerHTML = `<img src="${imgSrc}" alt="${name}">
-                        <div>Id No. ${id.toString().padStart(3, '0')}</div>
-                        <div>${name}</div>
-                        <div>Type(s): ${types}</div>`
-                        
-                    newCard.addEventListener('click', (e) => {
-                        currentModalPokemonIndex = id - 1;
-                        showModal(pokemonDetails);
-                    })
+                    const newCard = createCard(pokemonDetails);
                     cardList.appendChild(newCard);
                     currentOffset += 1;
                 }

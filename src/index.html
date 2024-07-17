@@ -5,65 +5,49 @@
         <title>Pokedex</title>
     </head>
     <body>
-        <div id="modal" class="fixed top-24 left-32 right-32 bg-white flex flex-col items-center p-8">
-            <div id="header" class="flex justify-end">
-                <h1>Detailed View</h1>
-                <button id="closebtn">Close</button>
+        <div id="logo" class="mx-8 my-6">
+            <img src="static/pokedex logo.png" alt="pokemon logo" border="0" class="h-28">
+        </div>
+        <div id="modal" class="z-1 fixed top-16 left-32 right-32 flex flex-col items-center p-8 rounded-3xl bg-slate-300" style="display: none;">
+            <div id="header" class="flex justify-between justify-end w-full">
+                <h1 class="font-bold">Detailed View</h1>
+                <button id="closebtn">
+                    Close
+                </button>
             </div>
             <div id="modalbody" class="flex">
-                <img src="https://assets.pokemon.com/assets/cms2/img/pokedex/full/132.png" alt="ditto">
-                <div id="info" class="flex flex-col">
-                    <p>ID Num: 132</p>
-                    <p>Name: Ditto</p>
-                    <p>Height: 3</p>
-                    <p>Weight: 40</p>
-                    <p>Type(s): Normal</p>
-                    <p>Weakness: Rock, Ghost, Steel</p>
-                    <div>
-                        <p>Stats</p>
-                        <div>HP: 48</div>
-                        <div>Attack: 48</div>
-                        <div>Defense: 48</div>
-                        <div>Special Attack: 48</div>
-                        <div>Special Defense: 48</div>
-                    </div>
-                    <div>
-                        <p>Abilities</p>
-                        <div>Limber</div>
-                        <div>Imposter</div>
-                    </div>
-                    <div>
-                        <p>Moves</p>
-                        <div>Transform</div>
-                    </div>
-                </div>
             </div>
             <div id="modalbuttons" class="flex flex-row">
                 <button id="prevbtn" class="bg-slate-50">Previous</button>
                 <button id="nextbtn">Next</button>
             </div>
         </div>
-        <div id="title" class="p-5">
-            <h1>Welcome to the Pokedex!</h1>
-        </div>
         <div id="main">
-            <form id="filterform" class="p-5">
-                <label for="id">ID Number</label>
-                <input type="text" name="id" id="id" />
-                <label for="name">Name</label>
-                <input type="text" name="name" id="name" />
-                <input type="submit" value="Apply Filter">
+            <form id="filterform" class="forms p-5">
+                <label for="id" class="mr-2">ID Number</label>
+                <input type="text" name="id" id="id" class="mr-6 rounded-md border-0 py-1.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#345ca1] sm:text-sm sm:leading-6" />
+                <label for="name" class="mr-2">Name</label>
+                <input type="text" name="name" id="name" class="mr-8 rounded-md border-0 py-1.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#345ca1] sm:text-sm sm:leading-6" />
+                <input type="submit" value="Apply Filter" class="cursor-pointer rounded-md bg-[#345ca1] text-white py-2 px-4">
             </form>
-            <form id="sortform" class="p-5">
-                <label>Sort by</label>
-                <input type="radio" name="sort" value="id" id="id" checked />
-                <label for="id">ID</label>
-                <input type="radio" name="sort" value="name" id="name" />
-                <label for="name">Name</label>
+            <form id="sortform" class="forms p-5 -mt-10 flex">
+                <label class="mr-6">Sort by</label>
+                <div class="flex flex-col"> 
+                    <div>
+                        <input type="radio" name="sort" value="id" id="id" checked />
+                        <label for="id">ID</label>
+                    </div>
+                    <div>
+                        <input type="radio" name="sort" value="name" id="name" />
+                        <label for="name">Name</label>
+                    </div>
+                </div>
             </form>
-            <div id="cardlist" class="grid grid-cols-5 gap-6 mx-6">
+            <div id="cardlist" class="z-0 grid grid-cols-5 gap-6 mx-6 -mt-2">
             </div>
-            <button id="loadmore">Load More</button>
+            <div class="flex justify-center my-4">
+                <button id="loadmore" class="cursor-pointer rounded-md bg-[#345ca1] text-white py-2 px-4">Load More</button>
+            </div>
         </div>
         <script type="module" src="index.js"></script>
     </body>

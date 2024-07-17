@@ -1,4 +1,51 @@
+
+@font-face {
+	font-family: 'InterBold';
+	src: url('static/fonts/Inter-Bold.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'InterMed';
+	src: url('static/fonts/Inter-Medium.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'InterReg';
+	src: url('static/fonts/Inter-Regular.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'EncodeBold';
+	src: url('static/fonts/EncodeSansExpanded-Bold.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'EncodeSB';
+	src: url('static/fonts/EncodeSansExpanded-SemiBold.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'EncodeMed';
+	src: url('static/fonts/EncodeSansExpanded-Medium.ttf') format('truetype');
+}
+
+.pokenum {
+    font-family: 'EncodeSB';
+}
+
+.pokename {
+    font-family: 'EncodeBold';
+}
+
+.poketype {
+    font-family: 'InterMed';
+}
+
+.forms {
+    font-family: 'InterMed';
+
+}
 .card {
-    border: 1px solid black;
+    border: 1px solid rbga(0,0,0,0);
     background-color: bisque;
 }
