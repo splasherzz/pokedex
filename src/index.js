@@ -3,17 +3,36 @@ const OFFSET_AMOUNT = 10;
 
 let currentOffset = 0;
 const pokemonDataList = [];
+let currentModalPokemonIndex = 0;
 
 const cardList = document.getElementById('cardlist');
 const loadMoreBtn = document.getElementById('loadmore');
 const filterForm = document.getElementById('filterform');
 const sortForm = document.getElementById('sortform');
 const modal = document.getElementById('modal');
+const nextBtn = document.getElementById('nextbtn');
+const prevBtn = document.getElementById('prevbtn');
+const closeBtn = document.getElementById('closebtn');
 
 const WEAKNESSES = {
-    "normal": ["rock", "ghost", "steel"],
-    "fighting": ["flying", "poison", "psychic", "bug", "ghost", "fairy"]
-    // Continue to add
+    "normal": ["Rock", "Ghost", "Steel"],
+    "fighting": ["Flying", "Poison", "Psychic", "Bug", "Ghost", "Fairy"],
+    "flying": ["Rock", "Steel", "Electric"],
+    "poison": ["Poison", "Ground", "Rock", "Ghost", "Steel"],
+    "ground": ["Flying", "Bug", "Grass"],
+    "rock": ["Fighting", "Ground", "Steel"],
+    "bug": ["Fighting", "Flying", "Poison", "Ghost", "Steel", "Fire", "Fairy"],
+    "ghost": ["Normal", "Dark"],
+    "steel": ["Steel", "Fire", "Water", "Electric"],
+    "fire": ["Rock", "Fire", "Water", "Dragon"],
+    "water": ["Water", "Grass", "Dragon"],
+    "grass": ["Flying", "Poison", "Bug", "Steel", "Fire", "Grass", "Dragon"],
+    "electric": ["Ground", "Grass", "Electric", "Dragon"],
+    "psychic": ["Steel", "Psychic", "Dark"],
+    "ice": ["Steel", "Fire", "Water", "Ice"],
+    "dragon": ["Steel", "Fairy"],
+    "dark": ["Fighting", "Dark", "Fairy"],
+    "fairy": ["Poison", "Steel", "Fire"]
 };
 
 async function getPokemonDetailsByURL(url) {
@@ -138,7 +157,14 @@ function showModal(details) {
     const modalbody = document.getElementById('modalbody');
     const id = details.id.toString().padStart(3, '0');
     const types = details.types.map(type => type.type.name).join(', ');
-    const weaknesses = "rock, ghost, steel"; 
+    const weaknesses = new Set(); 
+
+    details.types.forEach(type => {
+        WEAKNESSES[type.type.name].forEach(weakness => {
+            weaknesses.add(weakness);
+        })
+    })
+    
     
     modalbody.innerHTML = `
         <img src="https://assets.pokemon.com/assets/cms2/img/pokedex/full/${id}.png" alt="ditto">
@@ -148,7 +174,7 @@ function showModal(details) {
                 <p>Height: ${details.height}</p>
                 <p>Weight: ${details.weight}</p>
                 <p>Type(s): ${types}</p>
-                <p>Weakness: Rock, Ghost, Steel</p>
+                <p>Weakness: ${[...weaknesses].join(', ')}</p>
                 <div>
                     <p>Stats</p>
                     <div>HP: ${details.stats[0].base_stat}</div>
@@ -159,10 +185,10 @@ function showModal(details) {
                     <div>Speed: ${details.stats[5].base_stat}</div>
                 </div>
                 <p>Abilities</p>
-                <div id="abilities" class="max-h-32 overflow-scroll">
+                <div id="abilities" class="max-h-32 overflow-y-scroll">
                 </div>
                 <p>Moves</p>
-                <div id="moves" class="max-h-16 overflow-scroll">
+                <div id="moves" class="max-h-16 overflow-y-scroll">
                 </div>
             </div>
         </div>`;
@@ -183,6 +209,18 @@ function showModal(details) {
 
 }
 
+function nextModal() {
+    currentModalPokemonIndex = (currentModalPokemonIndex + 1) % 1010;
+    const nextPokemon = pokemonDataList[currentModalPokemonIndex];
+    showModal(nextPokemon);
+}
+
+function prevModal() {
+    currentModalPokemonIndex = (currentModalPokemonIndex - 1 + 1010) % 1010;
+    const nextPokemon = pokemonDataList[currentModalPokemonIndex];
+    showModal(nextPokemon);
+}
+
 loadMoreBtn.addEventListener('click', loadMorePokemons);
 
 filterForm.addEventListener('submit', (e) => {
@@ -197,6 +235,12 @@ sortForm.addEventListener('change', (e) => {
     applySort(sortType);
 });
 
+nextBtn.addEventListener('click', nextModal);
+prevBtn.addEventListener('click', prevModal);
+closeBtn.addEventListener('click', (e) => {
+    modal.style.display = 'none';
+});
+
 window.onload = () => {
     modal.style.display = 'flex';
     getPokemons(1_010, 0)
@@ -205,6 +249,10 @@ window.onload = () => {
             for(const pokemon of pokemons) {
                 const pokemonDetails = await getPokemonDetailsByURL(pokemon.url);
                 pokemonDataList.push(pokemonDetails);
+                if(currentOffset == 0) {
+                    console.log(pokemonDataList[0]);
+                    showModal(pokemonDataList[0]);
+                }
                 
                 if (currentOffset < OFFSET_AMOUNT) {
                     const id = pokemonDetails.id;
@@ -223,7 +271,5 @@ window.onload = () => {
                     currentOffset += 1;
                 }
             }
-            console.log(pokemonDataList[0]);
-            showModal(pokemonDataList[0]);
     });
 }
