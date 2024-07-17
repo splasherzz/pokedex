@@ -87,7 +87,11 @@ async function loadMorePokemons() {
             <div>Id No. ${id.toString().padStart(3, '0')}</div>
             <div>${name}</div>
             <div>Type(s): ${types}</div>`
-
+        
+        newCard.addEventListener('click', (e) => {
+            currentModalPokemonIndex = id - 1;
+            showModal(pokemonDetails);
+        })
         cardList.appendChild(newCard);
     }
 
@@ -117,6 +121,10 @@ function applyFilter(id, name) {
             <div>${name}</div>
             <div>Type(s): ${types}</div>`
 
+        newCard.addEventListener('click', (e) => {
+            currentModalPokemonIndex = id - 1;
+            showModal(pokemonDetails);
+        })
         cardList.appendChild(newCard);
     })
 }
@@ -147,7 +155,11 @@ function applySort(sortType) {
             <div>Id No. ${id.toString().padStart(3, '0')}</div>
             <div>${name}</div>
             <div>Type(s): ${types}</div>`
-
+            
+        newCard.addEventListener('click', (e) => {
+            currentModalPokemonIndex = id - 1;
+            showModal(pokemonDetails);
+        })
         cardList.appendChild(newCard);
     })
 }
@@ -242,17 +254,13 @@ closeBtn.addEventListener('click', (e) => {
 });
 
 window.onload = () => {
-    modal.style.display = 'flex';
+    modal.style.display = 'none';
     getPokemons(1_010, 0)
         .then(async (pokemons) => {
             let numProcessed = 0;
             for(const pokemon of pokemons) {
                 const pokemonDetails = await getPokemonDetailsByURL(pokemon.url);
                 pokemonDataList.push(pokemonDetails);
-                if(currentOffset == 0) {
-                    console.log(pokemonDataList[0]);
-                    showModal(pokemonDataList[0]);
-                }
                 
                 if (currentOffset < OFFSET_AMOUNT) {
                     const id = pokemonDetails.id;
@@ -266,7 +274,11 @@ window.onload = () => {
                         <div>Id No. ${id.toString().padStart(3, '0')}</div>
                         <div>${name}</div>
                         <div>Type(s): ${types}</div>`
-    
+                        
+                    newCard.addEventListener('click', (e) => {
+                        currentModalPokemonIndex = id - 1;
+                        showModal(pokemonDetails);
+                    })
                     cardList.appendChild(newCard);
                     currentOffset += 1;
                 }
