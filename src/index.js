@@ -16,6 +16,7 @@ const modal = document.getElementById('modal');
 const nextBtn = document.getElementById('nextbtn');
 const prevBtn = document.getElementById('prevbtn');
 const closeBtn = document.getElementById('closebtn');
+const overlay = document.getElementById('overlay');
 
 const WEAKNESSES = {
     "normal": ["Rock", "Ghost", "Steel"],
@@ -57,6 +58,52 @@ const PILL_COLORS = {
     "dragon": "violet-900",
     "dark": "neutral-800",
     "fairy": "fuchsia-500"
+}
+
+const PASTEL_COLORS = {
+    "normal": "zinc-300",
+    "fighting": "red-200",
+    "flying": "sky-300",
+    "poison": "violet-200",
+    "ground": "yellow-200",
+    "rock": "yellow-200",
+    "bug": "lime-200",
+    "ghost": "purple-300",
+    "steel": "zinc-300",
+    "fire": "orange-200",
+    "water": "cyan-200",
+    "grass": "green-200",
+    "electric": "yellow-200",
+    "psychic": "pink-200",
+    "ice": "cyan-200",
+    "dragon": "violet-200",
+    "dark": "neutral-300",
+    "fairy": "fuchsia-200"
+}
+
+const WITH_HYPHEN = new Set([
+    "ho-oh", "porygon-z", "jangmo-o", "hakamo-o", "kommo-o", "ting-lu", "chien-pao", "wo-chien", "chi-yu"
+])
+
+function add_symbols(name) {
+    switch (name) {
+        case "mr-mime":
+            return "mr. mime";
+        case "mime-jr":
+            return "mime jr."
+        case "mr-rime":
+            return "mr. rime"
+        case "farfetchd":
+            return "farfetch'd"
+        case "sirfetchd":
+            return "sirfetch'd"
+        case "type-null":
+            return "type: null"
+        case "flabebe":
+            return "flabébé"
+        default:
+            return name;
+    }
 }
 
 async function getPokemonDetailsByURL(url) {
@@ -103,11 +150,11 @@ function createCard(pokemonDetails) {
     const imgSrc = `https://assets.pokemon.com/assets/cms2/img/pokedex/full/${id.toString().padStart(3, '0')}.png`;
 
     const newCard = document.createElement("div");
-    newCard.setAttribute("class", "card rounded-lg px-4 py-2 hover:bg-white hover:shadow-lg cursor-pointer group");
+    newCard.setAttribute("class", "card bg-sky-950 rounded-lg px-4 py-2 hover:bg-white hover:shadow-lg cursor-pointer group");
     newCard.innerHTML = `
-        <div class="pokenum text-lg text-slate-500">${id.toString().padStart(3, '0')}</div>
+        <div class="pokenum text-lg text-cyan-700">${id.toString().padStart(3, '0')}</div>
         <img src="${imgSrc}" alt="${name}" class="transition-transform duration-300 group-hover:scale-110">
-        <div class="pokename capitalize font-bold text-center text-3xl">${name}</div>
+        <div class="pokename capitalize font-bold text-center text-3xl text-slate-200 group-hover:text-sky-950">${name}</div>
         <div class="poketype flex justify-center mt-1">${types}</div>`
     
     newCard.addEventListener('click', (e) => {
@@ -119,13 +166,12 @@ function createCard(pokemonDetails) {
 
 async function loadMorePokemons() {
     const pokemons = loadPokemons(OFFSET_AMOUNT, currentOffset);
-    // loop over the results, for each result, perform fetch to get the details
+    
     for(const pokemonDetails of pokemons) {
         const newCard = createCard(pokemonDetails);
         cardList.appendChild(newCard);
     }
 
-    // Update global state
     currentOffset = currentOffset + OFFSET_AMOUNT;
 }
 
@@ -142,7 +188,7 @@ function refreshCardList() {
 
 function applyFilter(id, name) {
     filterFunction = (pokemon) => {
-        return pokemon.id == id || (name !== '' && pokemon.name.includes(name)) || id === '' && name === '';
+        return pokemon.id == id || (name !== '' && pokemon.name.toLowerCase().includes(name.toLowerCase())) || id === '' && name === '';
     }
 
     refreshCardList();
@@ -164,10 +210,12 @@ function applySort(sortType) {
 }
 
 function showModal(details) {
+    document.body.classList.add('modal-open');
+    overlay.classList.remove('hidden');
     modal.style.display = 'flex';
     const modalbody = document.getElementById('modalbody');
     const id = details.id.toString().padStart(3, '0');
-    const types = details.types.map(type => type.type.name).join(', ');
+    const types = details.types.map(type => `<div class="bg-${PILL_COLORS[type.type.name]} text-xs text-white capitalize rounded-2xl px-3 py-1 m-1">${type.type.name}</div>`).join(' ');
     const weaknesses = new Set(); 
 
     details.types.forEach(type => {
@@ -175,55 +223,81 @@ function showModal(details) {
             weaknesses.add(weakness);
         })
     })
+
+    const weakness_pills = [...weaknesses].map(type => `<div class="bg-${PILL_COLORS[type.toLowerCase()]} inline-block text-xs text-white capitalize rounded-2xl px-3 py-1 m-1">${type}</div>`).join(' ');
     
     
     modalbody.innerHTML = `
-        <div class="flex flex-col items-center bg-white rounded-full mx-5">
-            <img src="https://assets.pokemon.com/assets/cms2/img/pokedex/full/${id}.png" alt="${details.name}">
-            <p class="text-sm">${id}</p>
-            <p class="uppercase font-bold text-3xl">${details.name}</p>
+        <div class="flex flex-col items-center bg-${PASTEL_COLORS[details.types[0].type.name.toLowerCase()]} rounded-full mx-5 w-1/2 text-black">
+            <img src="https://assets.pokemon.com/assets/cms2/img/pokedex/full/${id}.png" alt="${details.name}" class="w-2/3">
+            <p class="pokenum text-sm">${id}</p>
+            <p class="capitalize pokename text-3xl">${details.name}</p>
         </div>
-        <div id="info" class="flex flex-col">
-            <div class="flex">
-                <div class="flex flex-col items-center text-xl">
-                    <p>${details.height}</p>
-                    <p>Height</p>
+        <div id="info" class="flex flex-col w-1/2 mt-6">
+            <div class="flex justify-between mainstats text-xs mb-4">
+                <div class="flex flex-col w-1/6 items-center text-xl p-1 m-1.5 bg-slate-100 rounded-md text-sky-950">
+                    <p class="statnum">${details.stats[0].base_stat}</p>
+                    <p>HP</p>
                 </div>
-                <div class="flex flex-col items-center text-xl">
-                    <p>${details.weight}</p>
-                    <p>Weight</p>
+                <div class="flex flex-col w-1/6 items-center text-xl p-1 m-1.5 bg-slate-100 rounded-md text-sky-950">
+                    <p class="statnum">${details.stats[1].base_stat}</p>
+                    <p>ATK</p>
+                </div>
+                <div class="flex flex-col w-1/6 items-center text-xl p-1 m-1.5 bg-slate-100 rounded-md text-sky-950">
+                    <p class="statnum">${details.stats[2].base_stat}</p>
+                    <p>DEF</p>
+                </div>
+                <div class="flex flex-col w-1/6 items-center text-xl p-1 m-1.5 bg-slate-100 rounded-md text-sky-950">
+                    <p class="statnum">${details.stats[3].base_stat}</p>
+                    <p class="text-center">S. ATK</p>
+                </div>
+                <div class="flex flex-col w-1/6 items-center text-xl p-1 m-1.5 bg-slate-100 rounded-md text-sky-950">
+                    <p class="statnum">${details.stats[4].base_stat}</p>
+                    <p class="text-center">S. DEF</p>
+                </div>
+                <div class="flex flex-col w-1/6 items-center text-xl p-1 m-1.5 bg-slate-100 rounded-md text-sky-950">
+                    <p class="statnum">${details.stats[5].base_stat}</p>
+                    <p>SPD</p>
                 </div>
             </div>
-            <p>Type(s): ${types}</p>
-            <p>Weakness: ${[...weaknesses].join(', ')}</p>
-            <div>
-                <p>Stats</p>
-                <div>HP: ${details.stats[0].base_stat}</div>
-                <div>Attack: ${details.stats[1].base_stat}</div>
-                <div>Defense: ${details.stats[2].base_stat}</div>
-                <div>Special Attack: ${details.stats[3].base_stat}</div>
-                <div>Special Defense: ${details.stats[4].base_stat}</div>
-                <div>Speed: ${details.stats[5].base_stat}</div>
+            <div class="flex justify-between items-center px-40 heading mb-4">
+                <p>Height: <span class="statval">${details.height}</span></p>
+                <p>Weight: <span class="statval">${details.weight}</span></p>
             </div>
-            <p>Abilities</p>
-            <div id="abilities" class="max-h-32 overflow-y-scroll">
+            <div class="flex heading ml-8">
+                <p><span class="mr-14">Type:</span>${types}<p>
             </div>
-            <p>Moves</p>
-            <div id="moves" class="max-h-16 overflow-y-scroll">
+            <div class="flex heading w-full mb-6 ml-8">
+                <div class="mr-4">Weakness:</div>
+                <div>${weakness_pills}</div>
+            </div>
+            <div class="flex justify-between items-start px-24">
+                <div class="flex flex-col heading w-1/2">
+                    <p class="text-2xl mb-1">Abilities:</p>
+                    <div id="abilities" class="max-h-32 capitalize statval">
+                    </div>
+                </div>
+                <div class="flex flex-col heading w-1/2">
+                    <p class="text-2xl mb-1">Moves:</p>
+                    <div id="moves" class="max-h-36 overflow-y-scroll capitalize statval pr-10">
+                    </div>
+                </div>
             </div>
         </div>`;
     
     const abilities = document.getElementById("abilities");
     details.abilities.forEach(ability => {
         const newAbilityDiv = document.createElement("div");
-        newAbilityDiv.innerHTML = `${ability.ability.name}`;
+        newAbilityDiv.setAttribute("class", "mb-1.5");
+        newAbilityDiv.innerHTML = `${ability.ability.name.replaceAll("-", " ")}`;
         abilities.appendChild(newAbilityDiv);
     });
 
     const moves = document.getElementById("moves");
     details.moves.forEach(move => {
         const newMoveDiv = document.createElement("div");
-        newMoveDiv.innerHTML = `${move.move.name}`;
+        newMoveDiv.setAttribute("class", "mb-1.5");
+        newMoveDiv.innerHTML = `${move.move.name.replaceAll("-", " ")}`;
         moves.appendChild(newMoveDiv);
     });
 
@@ -258,6 +332,14 @@ sortForm.addEventListener('change', (e) => {
 nextBtn.addEventListener('click', nextModal);
 prevBtn.addEventListener('click', prevModal);
 closeBtn.addEventListener('click', (e) => {
+    document.body.classList.remove('modal-open');
+    overlay.classList.add('hidden');
+    modal.style.display = 'none';
+});
+
+overlay.addEventListener('click', (e) => {
+    document.body.classList.remove('modal-open');
+    overlay.classList.add('hidden');
     modal.style.display = 'none';
 });
 
@@ -268,6 +350,10 @@ window.onload = () => {
             let numProcessed = 0;
             for(const pokemon of pokemons) {
                 const pokemonDetails = await getPokemonDetailsByURL(pokemon.url);
+                if (!WITH_HYPHEN.has(pokemonDetails.name)) {
+                    pokemonDetails.name = add_symbols(pokemonDetails.name);
+                    pokemonDetails.name = pokemonDetails.name.replaceAll("-", " ");
+                } 
                 pokemonDataList.push(pokemonDetails);
                 
                 if (currentOffset < OFFSET_AMOUNT) {

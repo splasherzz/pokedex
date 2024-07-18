@@ -29,7 +29,11 @@
 	src: url('static/fonts/EncodeSansExpanded-Medium.ttf') format('truetype');
 }
 
-.pokenum {
+.statnum {
+	font-family: 'EncodeMed';
+}
+
+.pokenum, .viewtitle {
     font-family: 'EncodeSB';
 }
 
@@ -37,15 +41,31 @@
     font-family: 'EncodeBold';
 }
 
-.poketype {
+.poketype, .forms, .statval {
     font-family: 'InterMed';
 }
 
-.forms {
-    font-family: 'InterMed';
-
+.mainstats, .heading {
+	font-family: 'InterBold';
 }
-.card {
-    border: 1px solid rbga(0,0,0,0);
-    background-color: bisque;
+
+#overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5); 
+    z-index: 10; 
+}
+
+.modal-open .card img {
+    transform: none !important;
+}
+
+.modal-open .card:hover {
+    
+    box-shadow: none !important;
+    transform: none !important;
+	cursor: default;
 }
